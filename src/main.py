@@ -22,7 +22,7 @@ with app.app_context():
 @app.route('/health')
 def health_check():
     """Health check endpoint for deployment platforms"""
-    return {'status': 'healthy', 'message': 'Dice Rolling Game is running!'}, 200
+    return {'status': 'healthy', 'message': 'Dice Rolling Game is running!', 'version': '1.1'}, 200
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
