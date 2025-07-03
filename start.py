@@ -14,17 +14,25 @@ logger = logging.getLogger(__name__)
 def setup_environment():
     """Set up the environment for deployment"""
     logger.info("Setting up environment...")
-    
+
     # Add current directory to Python path
     current_dir = os.path.dirname(os.path.abspath(__file__))
     if current_dir not in sys.path:
         sys.path.insert(0, current_dir)
-    
+
+    # Also add src directory to path
+    src_dir = os.path.join(current_dir, 'src')
+    if os.path.exists(src_dir) and src_dir not in sys.path:
+        sys.path.insert(0, src_dir)
+
     # Set environment variables
     os.environ.setdefault('FLASK_ENV', 'production')
-    
+
     logger.info(f"Python path: {sys.path}")
     logger.info(f"Current directory: {current_dir}")
+    logger.info(f"Files in current directory: {os.listdir(current_dir)}")
+    if os.path.exists(src_dir):
+        logger.info(f"Files in src directory: {os.listdir(src_dir)}")
     logger.info(f"PORT: {os.environ.get('PORT', 'Not set')}")
     logger.info(f"FLASK_ENV: {os.environ.get('FLASK_ENV', 'Not set')}")
 
