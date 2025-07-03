@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Rolling Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Username Entry Modal -->
+    <div id="usernameModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-user"></i> Welcome to Dice Rolling Game</h2>
+            <p>Enter your username to start playing:</p>
+            <input type="text" id="usernameInput" placeholder="Enter your username" maxlength="20">
+            <button id="startGameBtn" onclick="startGame()">
+                <i class="fas fa-play"></i> Start Game
+            </button>
+            <div id="usernameError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Main Game Interface -->
+    <div id="gameInterface" class="hidden">
+        <!-- Header -->
+        <header class="game-header">
+            <h1><i class="fas fa-dice"></i> Dice Rolling Game</h1>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="currentUsername"></span>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <div class="game-container">
+            <!-- Dice Rolling Section -->
+            <div class="dice-section">
+                <h2>Roll Your Dice!</h2>
+                <div class="dice-container">
+                    <div class="dice" id="dice1">
+                        <i class="fas fa-dice-one"></i>
+                    </div>
+                    <div class="dice" id="dice2">
+                        <i class="fas fa-dice-one"></i>
+                    </div>
+                    <div class="dice" id="dice3">
+                        <i class="fas fa-dice-one"></i>
+                    </div>
+                </div>
+                
+                <div class="score-display">
+                    <div class="total-score">
+                        <span>Total Score: </span>
+                        <span id="totalScore">0</span>
+                    </div>
+                </div>
+
+                <button id="rollDiceBtn" class="roll-button" onclick="rollDice()">
+                    <i class="fas fa-dice"></i> Shake Dice!
+                </button>
+
+                <div id="rollResult" class="roll-result hidden"></div>
+                <div id="rollError" class="error-message"></div>
+            </div>
+
+            <!-- Rankings Section -->
+            <div class="rankings-section">
+                <h3><i class="fas fa-trophy"></i> Top Rankings</h3>
+                <div class="rankings-container">
+                    <div id="rankingsList" class="rankings-list">
+                        <div class="loading">Loading rankings...</div>
+                    </div>
+                </div>
+                <div class="highlight-info">
+                    <i class="fas fa-star"></i>
+                    <span>Player highlighted this month</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="history-section">
+            <h3><i class="fas fa-history"></i> Recent Rolls</h3>
+            <div id="historyList" class="history-list">
+                <div class="loading">Loading history...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Rolling dice...</p>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
+

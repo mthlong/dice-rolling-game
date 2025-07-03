@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Helper - Dice Rolling Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .button.secondary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        
+        .instructions {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        .link {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .link:hover {
+            text-decoration: underline;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            color: #4caf50;
+        }
+        
+        .status.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 Google Sheets Helper</h1>
+        
+        <div class="section">
+            <h2>📋 Setup Instructions</h2>
+            <div class="instructions">
+                <ol>
+                    <li>Open your Google Sheet: <a href="https://docs.google.com/spreadsheets/d/1kiCoNvDBawPpOa2A46EMAHruhcC8LGLf5SCZhX6M4q0/edit" target="_blank" class="link">Click here</a></li>
+                    <li>Add headers in Row 1: Timestamp, Username, Dice1, Dice2, Dice3, Total Score, Date, Time</li>
+                    <li>Make sure your sheet is shared as "Anyone with the link can view"</li>
+                    <li>Use the buttons below to get data for your sheet</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Export Data</h2>
+            <p>Get current dice roll data to copy to your Google Sheet:</p>
+            <button class="button" onclick="exportCSV()">📥 Export All Data</button>
+            <button class="button secondary" onclick="getNewRolls()">🆕 Get New Rolls Only</button>
+            <button class="button secondary" onclick="getLatestRolls()">🔄 Get Latest 10 Rolls</button>
+            <div id="status"></div>
+            <textarea id="dataOutput" placeholder="Exported data will appear here..."></textarea>
+            <button class="button secondary" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+            <div class="instructions">
+                <strong>📝 How to add to your Google Sheet:</strong>
+                <ol>
+                    <li>Click "Export All Data" or "Get New Rolls Only"</li>
+                    <li>Click "Copy to Clipboard"</li>
+                    <li>Go to your Google Sheet</li>
+                    <li>Select cell A2 (first row after headers)</li>
+                    <li>Paste the data (Ctrl+V or Cmd+V)</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔗 Quick Links</h2>
+            <a href="/" class="button">🎲 Back to Game</a>
+            <a href="/api/sheets/export" target="_blank" class="button secondary">📄 View CSV Data</a>
+            <a href="/api/sheets/latest" target="_blank" class="button secondary">📊 View JSON Data</a>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${isError ? 'error' : 'success'}`;
+            setTimeout(() => {
+                status.textContent = '';
+                status.className = 'status';
+            }, 3000);
+        }
+
+        async function exportCSV() {
+            try {
+                const response = await fetch('/api/sheets/export');
+                if (response.ok) {
+                    const csvData = await response.text();
+                    // Remove the header line since it's already in the Google Sheet
+                    const lines = csvData.split('\n');
+                    const dataWithoutHeader = lines.slice(1).join('\n');
+                    document.getElementById('dataOutput').value = dataWithoutHeader;
+                    showStatus('✅ CSV data loaded successfully!');
+                } else {
+                    throw new Error('Failed to fetch CSV data');
+                }
+            } catch (error) {
+                showStatus('❌ Error loading CSV data: ' + error.message, true);
+            }
+        }
+
+        async function getLatestRolls() {
+            try {
+                const response = await fetch('/api/sheets/latest');
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Convert to CSV format (without headers)
+                    let csvData = '';
+                    data.rows.forEach(row => {
+                        csvData += row.join(',') + '\n';
+                    });
+
+                    document.getElementById('dataOutput').value = csvData;
+                    showStatus('✅ Latest rolls loaded successfully!');
+                } else {
+                    throw new Error('Failed to fetch latest rolls');
+                }
+            } catch (error) {
+                showStatus('❌ Error loading latest rolls: ' + error.message, true);
+            }
+        }
+
+        async function getNewRolls() {
+            try {
+                // First get what's currently in the Google Sheet
+                const sheetResponse = await fetch('https://docs.google.com/spreadsheets/d/1kiCoNvDBawPpOa2A46EMAHruhcC8LGLf5SCZhX6M4q0/export?format=csv&gid=0');
+                let existingData = [];
+
+                if (sheetResponse.ok) {
+                    const csvText = await sheetResponse.text();
+                    const lines = csvText.split('\n');
+                    // Skip header row and get existing timestamps
+                    for (let i = 1; i < lines.length; i++) {
+                        if (lines[i].trim()) {
+                            const cols = lines[i].split(',');
+                            if (cols[0]) {
+                                existingData.push(cols[0]); // timestamp
+                            }
+                        }
+                    }
+                }
+
+                // Get all local data
+                const localResponse = await fetch('/api/sheets/latest?limit=100');
+                if (localResponse.ok) {
+                    const data = await localResponse.json();
+
+                    // Filter out rows that already exist in Google Sheet
+                    const newRows = data.rows.filter(row => !existingData.includes(row[0]));
+
+                    if (newRows.length === 0) {
+                        document.getElementById('dataOutput').value = '';
+                        showStatus('✅ No new rolls to sync!');
+                        return;
+                    }
+
+                    // Convert to CSV format (without headers)
+                    let csvData = '';
+                    newRows.forEach(row => {
+                        csvData += row.join(',') + '\n';
+                    });
+
+                    document.getElementById('dataOutput').value = csvData;
+                    showStatus(`✅ Found ${newRows.length} new rolls to sync!`);
+                } else {
+                    throw new Error('Failed to fetch local data');
+                }
+            } catch (error) {
+                showStatus('❌ Error getting new rolls: ' + error.message, true);
+                // Fallback to all data
+                exportCSV();
+            }
+        }
+
+        function copyToClipboard() {
+            const textarea = document.getElementById('dataOutput');
+            if (textarea.value.trim() === '') {
+                showStatus('❌ No data to copy! Please export data first.', true);
+                return;
+            }
+            
+            textarea.select();
+            document.execCommand('copy');
+            showStatus('✅ Data copied to clipboard!');
+        }
+
+        // Load new rolls data on page load
+        window.addEventListener('load', getNewRolls);
+    </script>
+</body>
+</html>
