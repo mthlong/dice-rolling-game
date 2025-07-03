@@ -42,6 +42,7 @@ class GoogleSheetsService:
         except Exception as e:
             logging.warning(f"Could not initialize Google Sheets service: {e}. Using fallback mode.")
             self.use_fallback = True
+            self.service = None
 
     def _initialize_sheets_service(self):
         """Initialize Google Sheets service with authentication"""
