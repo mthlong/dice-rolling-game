@@ -51,7 +51,25 @@ class GoogleSheetsService:
 
         # Try different authentication methods
         try:
-            # Method 1: Try to use service account credentials file
+            # Method 1: Try to use service account credentials from environment variable
+            credentials_json = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+            if credentials_json:
+                import json
+                from google.oauth2.service_account import Credentials
+                creds_info = json.loads(credentials_json)
+                creds = Credentials.from_service_account_info(
+                    creds_info,
+                    scopes=['https://www.googleapis.com/auth/spreadsheets']
+                )
+                self.service = build('sheets', 'v4', credentials=creds)
+                self.use_fallback = False
+                logging.info("Google Sheets service initialized with service account credentials from environment")
+                return
+        except Exception as e:
+            logging.info(f"Service account credentials from environment not available: {e}")
+
+        try:
+            # Method 2: Try to use service account credentials file
             credentials_path = os.path.join(os.path.dirname(__file__), '..', 'credentials', 'service-account.json')
             if os.path.exists(credentials_path):
                 from google.oauth2.service_account import Credentials
@@ -61,10 +79,10 @@ class GoogleSheetsService:
                 )
                 self.service = build('sheets', 'v4', credentials=creds)
                 self.use_fallback = False
-                logging.info("Google Sheets service initialized with service account credentials")
+                logging.info("Google Sheets service initialized with service account credentials from file")
                 return
         except Exception as e:
-            logging.info(f"Service account credentials not available: {e}")
+            logging.info(f"Service account credentials file not available: {e}")
 
         try:
             # Method 2: Try to use default credentials
