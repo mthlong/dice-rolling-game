@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 Dice Rolling Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 2rem 0;
+        }
+
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .dice.rolling {
+            animation: roll 1s ease-in-out;
+        }
+
+        @keyframes roll {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+        }
+
+        .roll-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 1rem 0;
+        }
+
+        .roll-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .roll-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .username-input {
+            margin-bottom: 1rem;
+        }
+
+        .username-input input {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin: 0 10px;
+        }
+
+        .note {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 Dice Rolling Game</h1>
+        
+        <div class="username-input">
+            <input type="text" id="username" placeholder="Enter your username" maxlength="20">
+            <button onclick="startGame()" class="roll-button">Start Game</button>
+        </div>
+
+        <div id="game-area" style="display: none;">
+            <div class="dice-container">
+                <div class="dice" id="dice1">?</div>
+                <div class="dice" id="dice2">?</div>
+                <div class="dice" id="dice3">?</div>
+            </div>
+
+            <button id="rollButton" onclick="rollDice()" class="roll-button">🎲 Roll Dice!</button>
+
+            <div class="result" id="result"></div>
+        </div>
+
+        <div class="note">
+            <strong>Note:</strong> This is a static version for Cloudflare Pages demo. 
+            For full functionality with data persistence, visit the 
+            <a href="https://your-railway-app.railway.app" style="color: #ffd700;">Railway deployment</a>.
+        </div>
+    </div>
+
+    <script>
+        let hasRolled = false;
+        let currentUser = '';
+
+        function startGame() {
+            const username = document.getElementById('username').value.trim();
+            if (username.length < 2) {
+                alert('Username must be at least 2 characters long!');
+                return;
+            }
+            
+            currentUser = username;
+            document.querySelector('.username-input').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+        }
+
+        function rollDice() {
+            if (hasRolled) return;
+
+            const dice = document.querySelectorAll('.dice');
+            const rollButton = document.getElementById('rollButton');
+            
+            // Add rolling animation
+            dice.forEach(die => die.classList.add('rolling'));
+            rollButton.disabled = true;
+            rollButton.textContent = 'Rolling...';
+
+            // Simulate rolling animation
+            setTimeout(() => {
+                const results = [
+                    Math.floor(Math.random() * 6) + 1,
+                    Math.floor(Math.random() * 6) + 1,
+                    Math.floor(Math.random() * 6) + 1
+                ];
+
+                dice[0].textContent = results[0];
+                dice[1].textContent = results[1];
+                dice[2].textContent = results[2];
+
+                dice.forEach(die => die.classList.remove('rolling'));
+
+                const total = results.reduce((sum, val) => sum + val, 0);
+                
+                document.getElementById('result').innerHTML = `
+                    <strong>${currentUser}</strong> rolled: ${results.join(', ')}<br>
+                    <strong>Total: ${total}</strong>
+                `;
+
+                rollButton.textContent = 'Already Rolled!';
+                hasRolled = true;
+
+                // Store in localStorage for demo
+                const gameData = {
+                    username: currentUser,
+                    dice: results,
+                    total: total,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('lastRoll', JSON.stringify(gameData));
+
+            }, 1000);
+        }
+
+        // Load previous roll if exists
+        window.onload = function() {
+            const lastRoll = localStorage.getItem('lastRoll');
+            if (lastRoll) {
+                const data = JSON.parse(lastRoll);
+                // Could display previous roll info here
+            }
+        };
+    </script>
+</body>
+</html>
