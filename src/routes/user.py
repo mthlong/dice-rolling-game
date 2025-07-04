@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 import random
+import os
 from datetime import datetime
 from src.models.user import User, DiceRoll, Ranking, db
 from src.services.google_sheets import sheets_service
@@ -90,15 +91,22 @@ def roll_dice():
     )
     db.session.add(dice_roll)
     
-    # Save to Google Sheets
-    sheets_service.add_dice_roll_record(
-        username=username,
-        dice1=dice1,
-        dice2=dice2,
-        dice3=dice3,
-        total_score=total_score,
-        timestamp=datetime.utcnow().isoformat()
-    )
+    # Save to Google Sheets (with error handling)
+    sheets_success = False
+    sheets_error = None
+    try:
+        sheets_service.add_dice_roll_record(
+            username=username,
+            dice1=dice1,
+            dice2=dice2,
+            dice3=dice3,
+            total_score=total_score,
+            timestamp=datetime.utcnow().isoformat()
+        )
+        sheets_success = True
+    except Exception as e:
+        sheets_error = str(e)
+        print(f"Google Sheets error: {e}")  # Log for debugging
     
     # Update or create ranking
     ranking = Ranking.query.filter_by(user_id=user.id).first()
@@ -120,7 +128,9 @@ def roll_dice():
     
     return jsonify({
         'roll': dice_roll.to_dict(),
-        'ranking': ranking.to_dict()
+        'ranking': ranking.to_dict(),
+        'sheets_success': sheets_success,
+        'sheets_error': sheets_error
     }), 201
 
 @user_bp.route('/dice/check/<username>', methods=['GET'])
@@ -195,6 +205,37 @@ def export_sheets_data():
     """Export current data in CSV format for Google Sheets"""
     csv_data = sheets_service.export_for_google_sheets()
     return csv_data, 200, {'Content-Type': 'text/plain'}
+
+@user_bp.route('/sheets/status', methods=['GET'])
+def get_sheets_status():
+    """Get Google Sheets service status and diagnostics"""
+    try:
+        # Check if Google Sheets service is working
+        status = {
+            'service_available': not sheets_service.use_fallback,
+            'fallback_mode': sheets_service.use_fallback,
+            'spreadsheet_id': sheets_service.SPREADSHEET_ID,
+            'has_env_credentials': bool(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')),
+            'credentials_file_exists': os.path.exists(os.path.join(os.path.dirname(__file__), '..', 'credentials', 'service-account.json'))
+        }
+
+        # Try to test the service
+        if not sheets_service.use_fallback:
+            try:
+                # Try to read from the sheet to test connectivity
+                test_records = sheets_service.get_all_records()
+                status['test_read_success'] = True
+                status['record_count'] = len(test_records)
+            except Exception as e:
+                status['test_read_success'] = False
+                status['test_error'] = str(e)
+        else:
+            status['test_read_success'] = False
+            status['test_error'] = 'Using fallback mode - no Google Sheets access'
+
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({'error': str(e), 'service_available': False}), 500
 
 @user_bp.route('/sheets/latest', methods=['GET'])
 def get_latest_for_sheets():
