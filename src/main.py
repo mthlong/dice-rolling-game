@@ -7,7 +7,12 @@ from flask import Flask, send_from_directory
 from src.models.user import db
 from src.routes.user import user_bp
 
-app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
+# Try to serve built React app first, fallback to development static folder
+static_folder = os.path.join(os.path.dirname(__file__), 'static', 'dist')
+if not os.path.exists(static_folder):
+    static_folder = os.path.join(os.path.dirname(__file__), 'static')
+
+app = Flask(__name__, static_folder=static_folder)
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
 app.register_blueprint(user_bp, url_prefix='/api')
