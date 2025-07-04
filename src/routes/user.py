@@ -171,15 +171,55 @@ def get_dice_history():
 # Reset functionality for testing
 @user_bp.route('/reset', methods=['POST'])
 def reset_data():
-    DiceRoll.query.delete()
-    Ranking.query.delete()
-    User.query.delete()
-    db.session.commit()
-    
-    # Also clear Google Sheets data
-    sheets_service.clear_all_data()
-    
-    return jsonify({'message': 'All data reset successfully'}), 200
+    try:
+        # Clear database tables
+        deleted_rolls = DiceRoll.query.count()
+        deleted_rankings = Ranking.query.count()
+        deleted_users = User.query.count()
+
+        DiceRoll.query.delete()
+        Ranking.query.delete()
+        User.query.delete()
+        db.session.commit()
+
+        # Also clear Google Sheets data
+        sheets_cleared = False
+        sheets_error = None
+        try:
+            sheets_service.clear_all_data()
+            sheets_cleared = True
+        except Exception as e:
+            sheets_error = str(e)
+
+        return jsonify({
+            'message': 'All data reset successfully',
+            'database_cleared': True,
+            'deleted_rolls': deleted_rolls,
+            'deleted_rankings': deleted_rankings,
+            'deleted_users': deleted_users,
+            'sheets_cleared': sheets_cleared,
+            'sheets_error': sheets_error
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'error': f'Failed to reset data: {str(e)}',
+            'database_cleared': False
+        }), 500
+
+@user_bp.route('/reset/confirm', methods=['GET'])
+def reset_confirm():
+    """Get current data counts before reset"""
+    try:
+        counts = {
+            'users': User.query.count(),
+            'dice_rolls': DiceRoll.query.count(),
+            'rankings': Ranking.query.count(),
+            'sheets_records': len(sheets_service.get_all_records()) if not sheets_service.use_fallback else 0
+        }
+        return jsonify(counts)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Google Sheets data access routes
 @user_bp.route('/sheets/history', methods=['GET'])
